@@ -33,16 +33,17 @@ These classes will throw an exception in case of a serious error by default whic
 
 A class to read/write Windows INI files
 
-| Method          | Description                                                                  |
-| --------------- | ---------------------------------------------------------------------------- |
-| writeString     | Writes string to INI file                                                    |
+| Method          | Description                                                  |
+| --------------- | ------------------------------------------------------------ |
+| writeString     | Writes string to INI file                                    |
 | writeSection    | Writes complete section to INI file, an existing section will be overwritten |
-| writeArray      | Writes an array of values with identical keys to an INI file                 |
-| getString       | Get value from ini-file                                                      |
-| getBoolean      | Get boolean value from ini-file                                              |
-| getSection      | Retrieve complete section from ini-file                                      |
-| getArray        | Read all values of a section for identical keys into an array                |
-| getSectionNames | Read all section names of ini-file into an array                             |
+| writeArray      | Writes an array of values with identical keys to an INI file |
+| getString       | Get value from INI file                                      |
+| getBoolean      | Get boolean value from INI file                              |
+| getSection      | Retrieve complete section from INI file as an array of `key=value` pairs |
+| getSectionEx    | Retrieve complete section from INI file as an array of `{key, value}` pairs |
+| getArray        | Read all values of a section for identical keys into an array |
+| getSectionNames | Read all section names of INI file into an array             |
 
 ### rd_ConfigWithDefaults.ahk
 

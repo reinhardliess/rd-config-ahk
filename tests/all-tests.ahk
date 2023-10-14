@@ -2,7 +2,7 @@
 #NoEnv
 ; #SingleInstance force
 #Warn All, OutputDebug
-; #Warn, UseUnsetLocal, Off
+#Warn, UseUnsetLocal, Off
 #NoTrayIcon
 
 SetWorkingDir, %A_ScriptDir%
@@ -32,9 +32,10 @@ test_ConfigWithDefaults()
 
 ; -End of tests --
 
-assert.fullReport()
+; assert.fullReport()
 assert.writeTestResultsToFile()
-
+FileRead, logContents, result.tests.log
+OutputDebug, % logContents
 ExitApp, % assert.failTotal
 
 test_iniFile() {
@@ -62,6 +63,10 @@ test_iniFile() {
 
   assert.label("getSection")
   assert.test(ini.getSection("section2"), ["pet=cat", "plant=flower"])
+
+  assert.label("getSectionEx")
+  assert.test(ini.getSectionEx("section2")
+    , [ {key: "pet", value: "cat"}, {key: "plant", value: "flower"} ] )
 
   assert.label("getArray")
   assert.equal(ini.getArray("section3", "fruit"), ["apple", "lemon", "strawberry"])
