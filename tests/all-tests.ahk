@@ -9,6 +9,7 @@ SetWorkingDir, %A_ScriptDir%
 
 #Include, %A_ScriptDir%\..\rd_WinIniFile.ahk
 #Include, %A_ScriptDir%\..\rd_ConfigWithDefaults.ahk
+#Include, %A_ScriptDir%\..\rd_ConfigUtils.ahk
 #Include, %A_ScriptDir%\..\node_modules\rd-regexp-ahk\rd_RegExp.ahk
 #Include, %A_ScriptDir%\..\node_modules\unit-testing.ahk\export.ahk
 
@@ -27,7 +28,8 @@ OnError("ShowError")
 assert.group("IniFile Class")
 test_iniFile()
 
-assert.group("IniFileWithDefaults Class")
+assert.group("ConfigUtils Class")
+test_configUtils()
 test_ConfigWithDefaults()
 
 ; -End of tests --
@@ -37,6 +39,40 @@ assert.writeTestResultsToFile()
 FileRead, logContents, result.tests.log
 OutputDebug, % logContents
 ExitApp, % assert.failTotal
+test_configUtils() {
+  
+  assert.label("mergeIniSectionObjects should return the source object if the target is empty")
+  source := {pet: "cat", plant: "flower"}
+  target := {}
+  
+  actual := rd_ConfigUtils.mergeIniSectionObjects(source, target)
+  
+  assert.test(actual, {pet: "cat", plant: "flower"} )
+  
+  assert.label("mergeIniSectionObjects should return the target object if the source is empty")
+  source := {}
+  target := {pet: "cat", plant: "flower"}
+  
+  actual := rd_ConfigUtils.mergeIniSectionObjects(source, target)
+  
+  assert.test(actual, {pet: "cat", plant: "flower"} )
+  
+  assert.label("mergeIniSectionObjects should merge keys from source/target objects if those keys are different")
+  source := {tree: "oak"}
+  target := {pet: "cat", plant: "flower"}
+  
+  actual := rd_ConfigUtils.mergeIniSectionObjects(source, target)
+  
+  assert.test(actual, {tree: "oak", pet: "cat", plant: "flower"} )
+  
+  assert.label("mergeIniSectionObjects should merge source/target objects with different and identical keys correctly")
+  source := {tree: "oak", pet: "dog"}
+  target := {pet: "cat", plant: "flower"}
+  
+  actual := rd_ConfigUtils.mergeIniSectionObjects(source, target)
+  
+  assert.test(actual, {tree: "oak", pet: "dog", plant: "flower"} )
+}
 
 test_iniFile() {
 
