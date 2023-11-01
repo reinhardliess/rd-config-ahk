@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021-2022 Reinhard Liess
+ * Copyright(c) 2021-2023 Reinhard Liess
  * MIT Licensed
 */
 
@@ -36,7 +36,7 @@ class rd_WinIniFile {
    * @param {string*} param - parameters (variadic)
   */
   _processError(message, param*) {
-    if (ErrorLevel && rd_WinIniFile.throwExceptions) {
+    if (ErrorLevel && this.throwExceptions) {
       throw Exception(format(message, param*), -2)
     }
   }
@@ -49,7 +49,7 @@ class rd_WinIniFile {
   */
   writeString(section, key, value)  {
     IniWrite, % value, % this.iniFile, % section, % key
-    this._processError(rd_WinIniFile.ERR_INIWRITE, this.iniFile)
+    this._processError(this.ERR_INIWRITE, this.iniFile)
   }
 
   /**
@@ -67,7 +67,7 @@ class rd_WinIniFile {
       buffer .= "`n" value
     }
     IniWrite, % buffer, % this.iniFile, % section
-    this._processError(rd_WinIniFile.ERR_INIWRITE, this.iniFile)
+    this._processError(this.ERR_INIWRITE, this.iniFile)
 
   }
 
@@ -104,16 +104,16 @@ class rd_WinIniFile {
   * @param {string} key - key
   * @param {string} default - default value if key not found
   * @returns {string | undefined} value from ini-file or default or
-  *   `rd_WinIniFile.NOT_FOUND` if strictMode = true and key not found and default not set or
+  *   `this.NOT_FOUND` if strictMode = true and key not found and default not set or
   *   "" if strictMode = false and key not found and default not set
   */
   getString(section, key, default :="") {
 
     if (!default) {
-      default := this.strictMode ? rd_WinIniFile.NOT_FOUND : A_Space
+      default := this.strictMode ? this.NOT_FOUND : A_Space
     }
-    IniRead, tempValue, % this.iniFile, % section, % key, % default
-    return Trim(tempValue)
+    IniRead, iniString, % this.iniFile, % section, % key, % default
+    return Trim(iniString)
   }
 
   /**
@@ -156,7 +156,16 @@ class rd_WinIniFile {
   getBoolean(section, key, default := "0") {
 
     value := this.getString(section, key, default)
-    for _, element in rd_WinIniFile.BOOLEAN_TRUE {
+    return this._isBooleanValue(value)
+  }
+  
+  /**
+  * Determines if a value is a boolean
+  * @param {string} value - value
+  * @returns {boolean}
+  */
+  _isBooleanValue(value) {
+    for _, element in this.BOOLEAN_TRUE {
       if (element = value) {
         return true
       }
