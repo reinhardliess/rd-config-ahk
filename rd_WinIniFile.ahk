@@ -123,28 +123,28 @@ class rd_WinIniFile {
   */
   getSection(section) {
 
-    IniRead, tempValue, % this.iniFile, % section
-    return StrSplit(tempValue, "`n")
+    IniRead, sectionContents, % this.iniFile, % section
+    return StrSplit(sectionContents, "`n")
   }
   
   /**
-  * Retrieves complete section from ini-file as object array
+  * Retrieves complete section from ini-file as object
   * @param {string} section - section name
-  * @returns {object[]} array of {key, value} pairs
+  * @returns {object} object representing the INI section key/value pairs
   */
   getSectionEx(section) {
     re := new rd_RegExp()
   
     IniRead, sectionContents, % this.iniFile, % section
     
-    sectionValues := []
+    iniPairs := {}
     ; https://regex101.com/r/mnNeIx/latest
-    matches := re.matchAll(sectionContents, "`am)^([^=]+)=(.*)$")
-    for _, match in matches {
-      value := { key: (match[1]), value: (match[2]) }
-      sectionValues.Push(value)
+    keyValuePairs := re.matchAll(sectionContents, "`am)^([^=]+)=(.*)$")
+    ; group1: key, group2: value
+    for _, keyValuePair in keyValuePairs {
+      iniPairs[keyValuePair[1]] := keyValuePair[2]
     }
-    return sectionValues
+    return iniPairs
   }
 
   /**
