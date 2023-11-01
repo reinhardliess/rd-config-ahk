@@ -38,7 +38,7 @@ class rd_ConfigWithDefaults {
    * @param {string*} param - parameters
   */
   _processError(message, param*) {
-    if (rd_ConfigWithDefaults.throwExceptions) {
+    if (this.throwExceptions) {
       throw Exception(format(message, param*), -2)
     }
   }
@@ -52,10 +52,10 @@ class rd_ConfigWithDefaults {
   *   2. Searches default
   */
   getString(section, key) {
-    if ((value := this.user.getString(section, key)) != rd_ConfigWithDefaults.NOT_FOUND) {
+    if ((value := this.user.getString(section, key)) != this.NOT_FOUND) {
       return value
     }
-    if ((value := this.default.getString(section, key)) != rd_ConfigWithDefaults.NOT_FOUND) {
+    if ((value := this.default.getString(section, key)) != this.NOT_FOUND) {
       return value
     }
     this._processError(this.ERR_NOT_FOUND, key, section)
@@ -71,7 +71,7 @@ class rd_ConfigWithDefaults {
   getBoolean(section, key) {
 
     value := this.getString(section, key)
-    for _, element in rd_ConfigWithDefaults.BOOLEAN_TRUE {
+    for _, element in this.BOOLEAN_TRUE {
       if (element = value) {
         return true
       }
