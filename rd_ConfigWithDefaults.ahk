@@ -99,6 +99,16 @@ class rd_ConfigWithDefaults {
     this._processError(this.ERR_NOT_FOUND, key, section)
     return values
   }
-
+  
+  /**
+  * Merge INI section of user, default, returns contents as object
+  * @param {string} section - section name
+  * @returns {object} merged INI sections as object 
+  */
+  getMergedSection(section) {
+    sectionDefault := this.default.getSectionEx(section)
+    sectionUser    := this.user.getSectionEx(section)
+    return rd_ConfigUtils.mergeIniSectionObjects(sectionUser, sectionDefault)
+  }
 }
 

@@ -1,4 +1,4 @@
- ; cspell:disable
+﻿ ; cspell:disable
 #NoEnv
 ; #SingleInstance force
 #Warn All, OutputDebug
@@ -34,6 +34,8 @@ test_configUtils()
 
 assert.group("WinIniFileC Class")
 test_iniFileC()
+
+assert.group("WinIniFileWithDefaults Class")
 test_ConfigWithDefaults()
 
 ; -End of tests --
@@ -88,6 +90,7 @@ test_configUtils() {
   
   assert.test(actual, {tree: "oak", pet: "dog", plant: "flower"} )
 }
+
 
 test_iniFile() {
 
@@ -195,6 +198,7 @@ test_ConfigWithDefaults() {
 
   ; reset setting in user INI
   ini.default.writeString("section2", "confirm", "beep")
+  ini.default.writeString("section2", "sendmode", "input")
   ini.user.writeString("section2", "confirm", "")
   assert.test(ini.getString("section2", "confirm"), "")
 
@@ -207,6 +211,9 @@ test_ConfigWithDefaults() {
   ini.user.writeArray("section3", "fruit", ["apricot", "peach"])
   assert.equal(ini.getArray("section3", "fruit"), ["apricot", "peach"])
 
+  assert.label("getMergedSection - merge section from default/user")
+  assert.test(ini.getMergedSection("section2"), { confirm: "", sendmode: "input"})
+  
 }
 
 ShowError(exception) {
