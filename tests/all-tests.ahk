@@ -8,6 +8,7 @@
 SetWorkingDir, %A_ScriptDir%
 
 #Include, %A_ScriptDir%\..\rd_WinIniFile.ahk
+#Include, %A_ScriptDir%\..\rd_WinIniFileC.ahk
 #Include, %A_ScriptDir%\..\rd_ConfigWithDefaults.ahk
 #Include, %A_ScriptDir%\..\rd_ConfigUtils.ahk
 #Include, %A_ScriptDir%\..\node_modules\rd-regexp-ahk\rd_RegExp.ahk
@@ -25,11 +26,14 @@ OnError("ShowError")
 
 ; -Tests --
 
-assert.group("IniFile Class")
+assert.group("WinIniFile Class")
 test_iniFile()
 
 assert.group("ConfigUtils Class")
 test_configUtils()
+
+assert.group("WinIniFileC Class")
+test_iniFileC()
 test_ConfigWithDefaults()
 
 ; -End of tests --
@@ -39,6 +43,17 @@ assert.writeTestResultsToFile()
 FileRead, logContents, result.tests.log
 OutputDebug, % logContents
 ExitApp, % assert.failTotal
+
+Class Test_WinIniFileC extends rd_WinIniFileC {
+
+  test_activeWinTitle := ""
+  
+  _isCustomizedAppActive(winTitle) {
+    return (winTitle = this.test_activeWinTitle)
+  }
+  
+}
+
 test_configUtils() {
   
   assert.label("mergeIniSectionObjects should return the source object if the target is empty")
@@ -106,6 +121,59 @@ test_iniFile() {
   assert.label("getArray")
   assert.equal(ini.getArray("section3", "fruit"), ["apple", "lemon", "strawberry"])
   assert.equal(ini.getArray("section3", "veggie"), ["carrot", "pea"])
+}
+
+test_iniFileC() {
+  FileDelete, temp-test.ini
+  
+  globalIni := new rd_WinIniFile("test-global.ini")
+  customSettings  := globalIni.getSectionEx("customized-settings")
+  ; ini := new rd_WinIniFileC("temp-test.ini", settings)
+  ini := new Test_WinIniFileC("temp-test.ini", customSettings)
+  
+  assert.label("writeStringC")
+  ini.writeString("section1", "debug", "on")
+  ini.writeString("section1", "logmode", "errors")
+  ini.writeStringC("section1", "debug", "off", "app1")
+  ; ini.writeStringC("section1", "logmode", "errors, warnings", "app1")
+  assert.test(ini.getString("section1.custom.app1", "debug"), "off")
+  
+  assert.label("getStringC - get standard setting")
+  ini.test_activeWinTitle := ""
+  assert.test(ini.getStringC("section1", "debug"), "on")
+  
+  assert.label("getStringC - get custom setting")
+  ini.test_activeWinTitle := "ahk_exe app1.exe"
+  assert.test(ini.getStringC("section1", "debug"), "off")
+  
+  assert.label("getBooleanC - get standard setting")
+  ini.test_activeWinTitle := ""
+  assert.test(ini.getBooleanC("section1", "debug"), true)
+  
+  assert.label("getBooleanC - get custom setting")
+  ini.test_activeWinTitle := "ahk_exe app1.exe"
+  assert.test(ini.getBooleanC("section1", "debug"), false)
+  
+  assert.label("writeArrayC - write custom array")
+  ini.writeArray("section3", "fruit", ["apple", "lemon", "strawberry"])
+  ini.writeArrayC("section3", "fruit", ["lemon", "strawberry"], "app2")
+  assert.equal(ini.getArray("section3.custom.app2", "fruit"), ["lemon", "strawberry"])
+  
+  assert.label("getArrayC - get standard setting")
+  ini.test_activeWinTitle := ""
+  assert.test(ini.getArrayC("section3", "fruit"), ["apple", "lemon", "strawberry"])
+
+  assert.label("getArrayC - get custom setting")
+  ini.test_activeWinTitle := "ahk_exe app2.exe"
+  assert.test(ini.getArrayC("section3", "fruit"), ["lemon", "strawberry"])
+
+  assert.label("getMergedSectionC - get standard section only")
+  ini.test_activeWinTitle := ""
+  assert.test(ini.getMergedSectionC("section1"), { debug: "on", logmode: "errors"})
+
+  assert.label("getMergedSectionC - get merged standard/customized sections")
+  ini.test_activeWinTitle := "ahk_exe app1.exe"
+  assert.test(ini.getMergedSectionC("section1"), { debug: "off", logmode: "errors"})
 }
 
 test_ConfigWithDefaults() {
