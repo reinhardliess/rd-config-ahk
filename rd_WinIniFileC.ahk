@@ -118,7 +118,7 @@ class rd_WinIniFileC extends rd_WinIniFile {
     appId := this._checkForCustomizedApp()
     return (appId 
       ? this.getArray(this._getCustomSectionName(section, appId), key) 
-      : rd_ConfigUtils.NOT_FOUND)
+      : [])
   }
   
   /**
@@ -129,7 +129,7 @@ class rd_WinIniFileC extends rd_WinIniFile {
   */
   getArrayC(section, key) {
     customSetting := this.getCustomizedArrayC(section, key)
-    return (customSetting == rd_ConfigUtils.NOT_FOUND
+    return (customSetting.Length() = 0
       ? this.getArray(section, key)
       : customSetting)
   }
@@ -156,7 +156,7 @@ class rd_WinIniFileC extends rd_WinIniFile {
     if (appId) {
       return this.getSectionEx(this._getCustomSectionName(section, appId))
     }
-    return rd_ConfigUtils.NOT_FOUND
+    return {}
   }
   
   /**
@@ -167,8 +167,6 @@ class rd_WinIniFileC extends rd_WinIniFile {
   getMergedSectionC(section) {
     standardSection   := this.getSectionEx(section)
     customizedSection := this.getCustomizedSectionC(section)
-    return (customizedSection == rd_ConfigUtils.NOT_FOUND
-      ? standardSection
-      : rd_ConfigUtils.mergeIniSectionObjects(customizedSection, standardSection))
+    return (rd_ConfigUtils.mergeIniSectionObjects(customizedSection, standardSection))
   }
 }

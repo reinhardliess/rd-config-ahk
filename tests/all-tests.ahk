@@ -188,7 +188,7 @@ test_iniFileC() {
   
   assert.label("getCustomizedArrayC - no custom setting")
   ini.test_activeWinTitle := ""
-  assert.test(ini.getCustomizedArrayC("section3", "fruit"), rd_ConfigUtils.NOT_FOUND)
+  assert.test(ini.getCustomizedArrayC("section3", "fruit"), [])
 
   assert.label("getCustomizedArrayC - return custom setting")
   ini.test_activeWinTitle := APP2_WINTITLE
@@ -204,7 +204,7 @@ test_iniFileC() {
 
   assert.label("getCustomizedSectionC - no custom section")
   ini.test_activeWinTitle := ""
-  assert.test(ini.getCustomizedSectionC("section1"), rd_ConfigUtils.NOT_FOUND)
+  assert.test(ini.getCustomizedSectionC("section1"), {})
 
   assert.label("getCustomizedSectionC - return custom section")
   ini.test_activeWinTitle := APP1_WINTITLE
@@ -264,7 +264,7 @@ test_ConfigWithDefaultsC() {
   
   ; == Tests ==
   
-  ; == getStringC ==
+  ;; == getStringC ==
   
   ; setting only in default INI
   assert.label("getStringC - setting only in default INI")
@@ -295,9 +295,35 @@ test_ConfigWithDefaultsC() {
   ini.user.test_activeWinTitle := APP1_WINTITLE
   assert.test(ini.getStringC("section1", "tree"), "willow")
   
-  ; == getArrayC ==
+  ;; == getArrayC ==
+  ini.default.test_activeWinTitle := ""
+  ini.user.test_activeWinTitle := ""
   
+  ; setting only in default
+  assert.label("getArrayC - setting only in default")
+  assert.test(ini.getArrayC("section4", "tree"), ["birch", "oak"])
   
+  ; setting in user overriding default
+  assert.label("getArrayC - setting in user overriding default")
+  assert.test(ini.getArrayC("section3", "fruit"), ["apple", "mango", "cherry"])
+  
+  ; custom setting in default INI - not active
+  assert.label("getArrayC - custom setting in default INI - not active")
+  ini.test_activeWinTitle := ""
+  ; assert.test(ini.getArrayC("section3", "fruit"), ["apple", "mango", "cherry"])
+  assert.test(ini.getArrayC("section4", "tree"), ["birch", "oak"])
+  
+  ; custom setting in default INI - app2 active
+  assert.label("getArrayC - custom setting in default INI - app2 active")
+  ini.default.test_activeWinTitle := APP2_WINTITLE
+  assert.test(ini.getArrayC("section4", "tree"), ["beech"])
+  
+  ; custom setting in default and user INI - app2 active
+  assert.label("getArrayC - custom setting in default and user INI - app2 active")
+  ini.default.test_activeWinTitle := APP2_WINTITLE
+  ini.user.test_activeWinTitle := APP2_WINTITLE
+  assert.test(ini.getArrayC("section3", "fruit"), ["lemon", "strawberry"])
+      
 }
 
 ShowError(exception) {
