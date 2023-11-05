@@ -8,15 +8,12 @@
   A class to manage app settings stored in default and user data sources,
   where the user data source can override the default data source.
 
-  Reinhard Liess, 2021
+  Reinhard Liess, 2021-2023
 */
 class rd_ConfigWithDefaults {
 
   ; class variables
-
   static throwExceptions := true
-  static NOT_FOUND := "@~not-found~@"
-  static BOOLEAN_TRUE := ["1", "on", "true"]
 
   ; instance variables
   ; The default error message can be overridden by the caller
@@ -52,10 +49,10 @@ class rd_ConfigWithDefaults {
   *   2. Searches default
   */
   getString(section, key) {
-    if ((value := this.user.getString(section, key)) != this.NOT_FOUND) {
+    if ((value := this.user.getString(section, key)) != rd_ConfigUtils.NOT_FOUND) {
       return value
     }
-    if ((value := this.default.getString(section, key)) != this.NOT_FOUND) {
+    if ((value := this.default.getString(section, key)) != rd_ConfigUtils.NOT_FOUND) {
       return value
     }
     this._processError(this.ERR_NOT_FOUND, key, section)
@@ -69,14 +66,8 @@ class rd_ConfigWithDefaults {
   * @returns {boolean} true/false
   */
   getBoolean(section, key) {
-
     value := this.getString(section, key)
-    for _, element in this.BOOLEAN_TRUE {
-      if (element = value) {
-        return true
-      }
-    }
-    return false
+    return rd_ConfigUtils.isBooleanValue(value)
   }
 
   /**

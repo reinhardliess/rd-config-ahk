@@ -13,9 +13,6 @@ class rd_WinIniFile {
 
   ; class variables
   static ERR_INIWRITE := "Error while writing to INI file '{1}'."
-  static BOOLEAN_TRUE := ["1", "on", "true"]
-  static NOT_FOUND := "@~not-found~@"
-
   static throwExceptions := true
 
   ; instance variables
@@ -104,13 +101,13 @@ class rd_WinIniFile {
   * @param {string} key - key
   * @param {string} default - default value if key not found
   * @returns {string | undefined} value from ini-file or default or
-  *   `this.NOT_FOUND` if strictMode = true and key not found and default not set or
+  *   `rd_ConfigUtils.NOT_FOUND` if strictMode = true and key not found and default not set or
   *   "" if strictMode = false and key not found and default not set
   */
   getString(section, key, default :="") {
 
     if (!default) {
-      default := this.strictMode ? this.NOT_FOUND : A_Space
+      default := this.strictMode ? rd_ConfigUtils.NOT_FOUND : A_Space
     }
     IniRead, iniString, % this.iniFile, % section, % key, % default
     return Trim(iniString)
@@ -156,23 +153,9 @@ class rd_WinIniFile {
   getBoolean(section, key, default := "0") {
 
     value := this.getString(section, key, default)
-    return this._isBooleanValue(value)
+    return rd_ConfigUtils.isBooleanValue(value)
   }
   
-  /**
-  * Determines if a value is a boolean
-  * @param {string} value - value
-  * @returns {boolean}
-  */
-  _isBooleanValue(value) {
-    for _, element in this.BOOLEAN_TRUE {
-      if (element = value) {
-        return true
-      }
-    }
-    return false
-  }
-
   /**
   * Read all values of a section for identical keys into an array
   * @param {string} section - section
