@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2021-2023 Reinhard Liess
+ * Copyright(c) 2023 Reinhard Liess
  * MIT Licensed
 */
 
@@ -58,6 +58,20 @@ class rd_WinIniFileC extends rd_WinIniFile {
   }
   
   /**
+  * Get customized setting string
+  * @param {string} section - section
+  * @param {string} key - key
+  * @param {string} [default] - default 
+  * @returns {string | rd_ConfigUtils.NOT_FOUND}
+  */
+  getCustomizedStringC(section, key, default :="") {
+    appId := this._checkForCustomizedApp()
+    return (appId 
+      ? this.getString(this._getCustomSectionName(section, appId), key, default) 
+      : rd_ConfigUtils.NOT_FOUND)
+  }
+  
+  /**
   * Get standard or customized setting string
   * @param {string} section - section
   * @param {string} key - key
@@ -65,10 +79,10 @@ class rd_WinIniFileC extends rd_WinIniFile {
   * @returns {string}
   */
   getStringC(section, key, default :="") {
-    appId := this._checkForCustomizedApp()
-    return (appId 
-      ? this.getString(this._getCustomSectionName(section, appId), key, default) 
-      : this.getString(section, key, default))
+    customSetting := this.getCustomizedStringC(section, key, default)
+    return (customSetting == rd_ConfigUtils.NOT_FOUND
+      ? this.getString(section, key, default)
+      : customSetting)
   }
   
   /**
@@ -95,18 +109,31 @@ class rd_WinIniFileC extends rd_WinIniFile {
   }
 
   /**
+  * Get customized setting array
+  * @param {string} section - section
+  * @param {string} key - key
+  * @returns {string[] | undefined}
+  */
+  getCustomizedArrayC(section, key) {
+    appId := this._checkForCustomizedApp()
+    return (appId 
+      ? this.getArray(this._getCustomSectionName(section, appId), key) 
+      : rd_ConfigUtils.NOT_FOUND)
+  }
+  
+  /**
   * Get standard or customized setting array
   * @param {string} section - section
   * @param {string} key - key
   * @returns {string[]}
   */
   getArrayC(section, key) {
-    appId := this._checkForCustomizedApp()
-    return (appId 
-      ? this.getArray(this._getCustomSectionName(section, appId), key) 
-      : this.getArray(section, key))
+    customSetting := this.getCustomizedArrayC(section, key)
+    return (customSetting = rd_ConfigUtils.NOT_FOUND
+      ? this.getArray(section, key)
+      : customSetting)
   }
-  
+    
   /**
   * Gets custom/standard boolean value from ini-file
   * @param {string} section - section name
@@ -116,7 +143,20 @@ class rd_WinIniFileC extends rd_WinIniFile {
   */
   getBooleanC(section, key, default := "0") {
     value := this.getStringC(section, key, default)
-    return this._isBooleanValue(value)
+    return rd_ConfigUtils.isBooleanValue(value)
+  }
+  
+  /**
+  * Gets customized section
+  * @param {string} section - section name
+  * @returns {object | undefined} customized section as object 
+  */
+  getCustomizedSectionC(section) {
+    appId := this._checkForCustomizedApp()
+    if (appId) {
+      return this.getSectionEx(this._getCustomSectionName(section, appId))
+    }
+    return rd_ConfigUtils.NOT_FOUND
   }
   
   /**
@@ -125,13 +165,10 @@ class rd_WinIniFileC extends rd_WinIniFile {
   * @returns {object} merged INI sections as object 
   */
   getMergedSectionC(section) {
-    standardSection := this.getSectionEx(section)
-    
-    appId := this._checkForCustomizedApp()
-    if (appId) {
-      customizedSection := this.getSectionEx(this._getCustomSectionName(section, appId))
-      return rd_ConfigUtils.mergeIniSectionObjects(customizedSection, standardSection)
-    }
-    return standardSection
+    standardSection   := this.getSectionEx(section)
+    customizedSection := this.getCustomizedSectionC(section)
+    return (customizedSection = rd_ConfigUtils.NOT_FOUND
+      ? standardSection
+      : rd_ConfigUtils.mergeIniSectionObjects(customizedSection, standardSection))
   }
 }

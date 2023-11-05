@@ -7,10 +7,10 @@
 
 SetWorkingDir, %A_ScriptDir%
 
+#Include, %A_ScriptDir%\..\rd_ConfigUtils.ahk
 #Include, %A_ScriptDir%\..\rd_WinIniFile.ahk
 #Include, %A_ScriptDir%\..\rd_WinIniFileC.ahk
 #Include, %A_ScriptDir%\..\rd_ConfigWithDefaults.ahk
-#Include, %A_ScriptDir%\..\rd_ConfigUtils.ahk
 #Include, %A_ScriptDir%\..\node_modules\rd-regexp-ahk\rd_RegExp.ahk
 #Include, %A_ScriptDir%\..\node_modules\unit-testing.ahk\export.ahk
 
@@ -47,7 +47,8 @@ OutputDebug, % logContents
 ExitApp, % assert.failTotal
 
 Class Test_WinIniFileC extends rd_WinIniFileC {
-
+  
+  ; To mock active window
   test_activeWinTitle := ""
   
   _isCustomizedAppActive(winTitle) {
@@ -89,6 +90,15 @@ test_configUtils() {
   actual := rd_ConfigUtils.mergeIniSectionObjects(source, target)
   
   assert.test(actual, {tree: "oak", pet: "dog", plant: "flower"} )
+  
+  assert.label("mergeIniSectionObjects should merge 3 objects correctly")
+  objs := [{tree: "oak", pet: "dog"}
+    , {pet: "cat", plant: "flower"}
+    , {weather: "sun", pet: "rabbit"}]
+  
+  actual := rd_ConfigUtils.mergeIniSectionObjects(objs*)
+  
+  assert.test(actual, {tree: "oak", pet: "dog", plant: "flower", weather: "sun"} )
 }
 
 
@@ -127,26 +137,36 @@ test_iniFile() {
 }
 
 test_iniFileC() {
+  
+  ; constants
+  APP1_WINTITLE := "ahk_exe app1.exe"
+  APP2_WINTITLE := "ahk_exe app2.exe"
+  
   FileDelete, temp-test.ini
   
-  globalIni := new rd_WinIniFile("test-global.ini")
-  customSettings  := globalIni.getSectionEx("customized-settings")
-  ; ini := new rd_WinIniFileC("temp-test.ini", settings)
+  customSettings := {app1: (APP1_WINTITLE), app2: (APP2_WINTITLE)}
   ini := new Test_WinIniFileC("temp-test.ini", customSettings)
   
   assert.label("writeStringC")
   ini.writeString("section1", "debug", "on")
   ini.writeString("section1", "logmode", "errors")
   ini.writeStringC("section1", "debug", "off", "app1")
-  ; ini.writeStringC("section1", "logmode", "errors, warnings", "app1")
   assert.test(ini.getString("section1.custom.app1", "debug"), "off")
+  
+  assert.label("getCustomizedStringC - no custom setting")
+  ini.test_activeWinTitle := ""
+  assert.test(ini.getCustomizedStringC("section1", "debug"), rd_ConfigUtils.NOT_FOUND)
+  
+  assert.label("getCustomizedStringC - return custom setting")
+  ini.test_activeWinTitle := APP1_WINTITLE
+  assert.test(ini.getCustomizedStringC("section1", "debug"), "off")
   
   assert.label("getStringC - get standard setting")
   ini.test_activeWinTitle := ""
   assert.test(ini.getStringC("section1", "debug"), "on")
   
   assert.label("getStringC - get custom setting")
-  ini.test_activeWinTitle := "ahk_exe app1.exe"
+  ini.test_activeWinTitle := APP1_WINTITLE
   assert.test(ini.getStringC("section1", "debug"), "off")
   
   assert.label("getBooleanC - get standard setting")
@@ -154,7 +174,7 @@ test_iniFileC() {
   assert.test(ini.getBooleanC("section1", "debug"), true)
   
   assert.label("getBooleanC - get custom setting")
-  ini.test_activeWinTitle := "ahk_exe app1.exe"
+  ini.test_activeWinTitle := APP1_WINTITLE
   assert.test(ini.getBooleanC("section1", "debug"), false)
   
   assert.label("writeArrayC - write custom array")
@@ -162,20 +182,36 @@ test_iniFileC() {
   ini.writeArrayC("section3", "fruit", ["lemon", "strawberry"], "app2")
   assert.equal(ini.getArray("section3.custom.app2", "fruit"), ["lemon", "strawberry"])
   
+  assert.label("getCustomizedArrayC - no custom setting")
+  ini.test_activeWinTitle := ""
+  assert.test(ini.getCustomizedArrayC("section3", "fruit"), rd_ConfigUtils.NOT_FOUND)
+
+  assert.label("getCustomizedArrayC - return custom setting")
+  ini.test_activeWinTitle := APP2_WINTITLE
+  assert.test(ini.getCustomizedArrayC("section3", "fruit"), ["lemon", "strawberry"])
+
   assert.label("getArrayC - get standard setting")
   ini.test_activeWinTitle := ""
   assert.test(ini.getArrayC("section3", "fruit"), ["apple", "lemon", "strawberry"])
 
   assert.label("getArrayC - get custom setting")
-  ini.test_activeWinTitle := "ahk_exe app2.exe"
+  ini.test_activeWinTitle := APP2_WINTITLE
   assert.test(ini.getArrayC("section3", "fruit"), ["lemon", "strawberry"])
+
+  assert.label("getCustomizedSectionC - no custom section")
+  ini.test_activeWinTitle := ""
+  assert.test(ini.getCustomizedSectionC("section1"), rd_ConfigUtils.NOT_FOUND)
+
+  assert.label("getCustomizedSectionC - return custom section")
+  ini.test_activeWinTitle := APP1_WINTITLE
+  assert.test(ini.getCustomizedSectionC("section1"), {debug: "off"})
 
   assert.label("getMergedSectionC - get standard section only")
   ini.test_activeWinTitle := ""
   assert.test(ini.getMergedSectionC("section1"), { debug: "on", logmode: "errors"})
 
   assert.label("getMergedSectionC - get merged standard/customized sections")
-  ini.test_activeWinTitle := "ahk_exe app1.exe"
+  ini.test_activeWinTitle := APP1_WINTITLE
   assert.test(ini.getMergedSectionC("section1"), { debug: "off", logmode: "errors"})
 }
 
