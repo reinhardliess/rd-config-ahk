@@ -1,15 +1,11 @@
 /*
- * ahk-lib
- * Copyright(c) 2021-2022 Reinhard Liess
- * MIT Licensed
+  A class to manage app settings stored in default and user INI files,
+  where the user INI can override the default INI.
+ 
+  Copyright(c) 2021-2023 Reinhard Liess
+  MIT Licensed
 */
 
-/*
-  A class to manage app settings stored in default and user data sources,
-  where the user data source can override the default data source.
-
-  Reinhard Liess, 2021-2023
-*/
 class rd_ConfigWithDefaults {
 
   ; class variables
@@ -37,6 +33,8 @@ class rd_ConfigWithDefaults {
   _processError(message, param*) {
     if (this.throwExceptions) {
       throw Exception(format(message, param*), -2)
+    } else {
+      ErrorLevel := 1
     }
   }
 

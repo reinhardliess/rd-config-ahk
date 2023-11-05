@@ -129,7 +129,7 @@ class rd_WinIniFileC extends rd_WinIniFile {
   */
   getArrayC(section, key) {
     customSetting := this.getCustomizedArrayC(section, key)
-    return (customSetting = rd_ConfigUtils.NOT_FOUND
+    return (customSetting == rd_ConfigUtils.NOT_FOUND
       ? this.getArray(section, key)
       : customSetting)
   }
@@ -167,7 +167,7 @@ class rd_WinIniFileC extends rd_WinIniFile {
   getMergedSectionC(section) {
     standardSection   := this.getSectionEx(section)
     customizedSection := this.getCustomizedSectionC(section)
-    return (customizedSection = rd_ConfigUtils.NOT_FOUND
+    return (customizedSection == rd_ConfigUtils.NOT_FOUND
       ? standardSection
       : rd_ConfigUtils.mergeIniSectionObjects(customizedSection, standardSection))
   }

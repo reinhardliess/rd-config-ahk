@@ -11,6 +11,7 @@ SetWorkingDir, %A_ScriptDir%
 #Include, %A_ScriptDir%\..\rd_WinIniFile.ahk
 #Include, %A_ScriptDir%\..\rd_WinIniFileC.ahk
 #Include, %A_ScriptDir%\..\rd_ConfigWithDefaults.ahk
+#Include, %A_ScriptDir%\..\rd_ConfigWithDefaultsC.ahk
 #Include, %A_ScriptDir%\..\node_modules\rd-regexp-ahk\rd_RegExp.ahk
 #Include, %A_ScriptDir%\..\node_modules\unit-testing.ahk\export.ahk
 
@@ -21,6 +22,10 @@ StringCaseSense Locale
 SetBatchLines, -1
 
 global assert := new unittesting()
+
+; constants for tests (app customization)
+global APP1_WINTITLE := "ahk_exe app1.exe"
+global APP2_WINTITLE := "ahk_exe app2.exe"
 
 OnError("ShowError")
 
@@ -37,6 +42,9 @@ test_iniFileC()
 
 assert.group("WinIniFileWithDefaults Class")
 test_ConfigWithDefaults()
+
+assert.group("WinIniFileWithDefaultsC Class")
+test_ConfigWithDefaultsC()
 
 ; -End of tests --
 
@@ -137,10 +145,6 @@ test_iniFile() {
 }
 
 test_iniFileC() {
-  
-  ; constants
-  APP1_WINTITLE := "ahk_exe app1.exe"
-  APP2_WINTITLE := "ahk_exe app2.exe"
   
   FileDelete, temp-test.ini
   
@@ -249,6 +253,50 @@ test_ConfigWithDefaults() {
 
   assert.label("getMergedSection - merge section from default/user")
   assert.test(ini.getMergedSection("section2"), { confirm: "", sendmode: "input"})
+  
+}
+
+test_ConfigWithDefaultsC() {
+  customSettings := {app1: (APP1_WINTITLE), app2: (APP2_WINTITLE)}
+  iniDefault := new Test_WinIniFileC("defaultC.ini", customSettings)
+  iniUser    := new Test_WinIniFileC("userC.ini", customSettings)
+  ini := new rd_ConfigWithDefaultsC(iniUser, iniDefault)
+  
+  ; == Tests ==
+  
+  ; == getStringC ==
+  
+  ; setting only in default INI
+  assert.label("getStringC - setting only in default INI")
+  assert.test(ini.getStringC("section1", "pet"), "cat")
+  
+  ; setting overridden in user INI
+  assert.label("getStringC - setting overridden in user INI")
+  assert.test(ini.getStringC("section1", "tree"), "birch")
+  
+  ; custom setting in default INI - not active
+  assert.label("getStringC - custom setting in default INI - not active")
+  ini.test_activeWinTitle := ""
+  assert.test(ini.getStringC("section1", "tree"), "birch")
+  
+  ; custom setting in default INI - app1 active
+  assert.label("getStringC - custom setting in default INI - app1 active")
+  ini.default.test_activeWinTitle := APP1_WINTITLE
+  assert.test(ini.getStringC("section1", "tree"), "beech")
+  
+  ; custom setting in user INI - app1 active
+  assert.label("getStringC - custom setting in user INI - app1 active")
+  ini.user.test_activeWinTitle := APP1_WINTITLE
+  assert.test(ini.getStringC("section1", "pet"), "dog")
+  
+  ; custom setting in default and user INI - app1 active
+  assert.label("getStringC - custom setting in default and user INI - app1 active")
+  ini.default.test_activeWinTitle := APP1_WINTITLE
+  ini.user.test_activeWinTitle := APP1_WINTITLE
+  assert.test(ini.getStringC("section1", "tree"), "willow")
+  
+  ; == getArrayC ==
+  
   
 }
 
