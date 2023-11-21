@@ -42,6 +42,18 @@ Class rd_ConfigWithDefaultsC extends rd_ConfigWithDefaults {
   }
 
   /**
+  * Get boolean value including customized settings,
+  * observing the configuration chain
+  * @param {string} section - section name
+  * @param {string} key - key
+  * @returns {boolean} true/false
+  */
+  getBooleanC(section, key) {
+    value := this.getStringC(section, key)
+    return rd_ConfigUtils.isBooleanValue(value)
+  }
+  
+  /**
   * Get array value from INI files, including customized settings,
   * observing the configuration chain
   * @param {string} section - section name
@@ -70,7 +82,7 @@ Class rd_ConfigWithDefaultsC extends rd_ConfigWithDefaults {
   /**
   * Removes not-found values from settings
   * @param {any*} settings - variadic settings array
-  * @returns {any[]} compacted settings array 
+  * @returns {array} compacted settings array 
   */
   _compactIniSettings(settings*) {
     newSettings := []
@@ -84,6 +96,26 @@ Class rd_ConfigWithDefaultsC extends rd_ConfigWithDefaults {
       } 
     }
     return newSettings
+  }
+  
+  /**
+  * Merge INI section of user, default, custom settings,
+  * returns contents as object
+  * @param {string} section - section name
+  * @returns {object} merged INI sections as object 
+  */
+  getMergedSectionC(section) {
+    sectionDefault := this.default.getSectionEx(section)
+    sectionUser    := this.user.getSectionEx(section)
+    sectionDefaultCustomized := this.default.getCustomizedSectionC(section)
+    sectionUserCustomized    := this.user.getCustomizedSectionC(section)
+    
+    settings := this._compactIniSettings(sectionUserCustomized
+    , sectionDefaultCustomized
+    , sectionUser
+    , sectionDefault)
+    
+    return rd_ConfigUtils.mergeIniSectionObjects(settings*)
   }
   
 }

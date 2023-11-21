@@ -31,6 +31,7 @@ OnError("ShowError")
 
 ; -Tests --
 
+; OutputDebug, Start`n
 assert.group("WinIniFile Class")
 test_iniFile()
 
@@ -45,6 +46,7 @@ test_ConfigWithDefaults()
 
 assert.group("WinIniFileWithDefaultsC Class")
 test_ConfigWithDefaultsC()
+; OutputDebug, End`n
 
 ; -End of tests --
 
@@ -295,6 +297,12 @@ test_ConfigWithDefaultsC() {
   ini.user.test_activeWinTitle := APP1_WINTITLE
   assert.test(ini.getStringC("section1", "tree"), "willow")
   
+  ; custom setting in default and user INI - app1 active
+  assert.label("getBooleanC - custom setting in default and user INI - app1 active")
+  ini.default.test_activeWinTitle := APP1_WINTITLE
+  ini.user.test_activeWinTitle := APP1_WINTITLE
+  assert.test(ini.getBooleanC("section6", "beep"), true)
+  
   ;; == getArrayC ==
   ini.default.test_activeWinTitle := ""
   ini.user.test_activeWinTitle := ""
@@ -323,7 +331,33 @@ test_ConfigWithDefaultsC() {
   ini.default.test_activeWinTitle := APP2_WINTITLE
   ini.user.test_activeWinTitle := APP2_WINTITLE
   assert.test(ini.getArrayC("section3", "fruit"), ["lemon", "strawberry"])
-      
+  
+  ;; == getMergedSectionC() ==
+  ini.default.test_activeWinTitle := ""
+  ini.user.test_activeWinTitle := ""
+
+  ; setting only in default
+  assert.label("getMergedSectionC - settings only in default")
+  assert.test(ini.getMergedSectionC("section5")
+    , { tree: "oak", pet: "cat", plant: "flower"})
+  
+  ; setting in user overriding default
+  assert.label("getMergedSectionC - setting in user overriding default")
+  assert.test(ini.getMergedSectionC("section1")
+    , { tree: "birch", pet: "cat", plant: "flower"})
+    
+  ; custom setting in default INI - app2 active
+  assert.label("getMergedSectionC - custom setting in default INI - app2 active")
+  ini.default.test_activeWinTitle := APP2_WINTITLE
+  assert.test(ini.getMergedSectionC("section5")
+    , { tree: "oak", pet: "dog", plant: "flower"})
+  
+  ; custom setting in default and user INI - app2 active
+  assert.label("getMergedSectionC - custom setting in default INI - app2 active")
+  ini.default.test_activeWinTitle := APP1_WINTITLE
+  ini.user.test_activeWinTitle := APP1_WINTITLE
+  assert.test(ini.getMergedSectionC("section1")
+    , { tree: "willow", pet: "dog", plant: "flower"})
 }
 
 ShowError(exception) {
