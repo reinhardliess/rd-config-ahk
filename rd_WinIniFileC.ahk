@@ -14,8 +14,7 @@ class rd_WinIniFileC extends rd_WinIniFile {
   /**
    * Constructor
    * @param {string} iniFile - file name of INI file
-   * @param {object[]} customSettings - array of {key, value}
-   * @returns {this}
+   * @param {object} customSettings - appId, Wintitle as key, value pairs
   */
   __New(iniFile, customSettings) {
     base.__New(iniFile)
@@ -112,7 +111,7 @@ class rd_WinIniFileC extends rd_WinIniFile {
   * Get customized setting array
   * @param {string} section - section
   * @param {string} key - key
-  * @returns {string[] | undefined}
+  * @returns {string[]}
   */
   getCustomizedArrayC(section, key) {
     appId := this._checkForCustomizedApp()
@@ -149,7 +148,7 @@ class rd_WinIniFileC extends rd_WinIniFile {
   /**
   * Gets customized section
   * @param {string} section - section name
-  * @returns {object | undefined} customized section as object 
+  * @returns {object} customized section as object 
   */
   getCustomizedSectionC(section) {
     appId := this._checkForCustomizedApp()

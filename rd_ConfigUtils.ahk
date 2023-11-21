@@ -5,7 +5,7 @@ Class rd_ConfigUtils {
   static NOT_FOUND := "@~not-found~@"
 
   /**
-  * Determines if a value is a boolean
+  * Determines if an INI value is a boolean
   * @param {string} value - value
   * @returns {boolean}
   */
