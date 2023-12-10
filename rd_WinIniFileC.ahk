@@ -90,9 +90,9 @@ class rd_WinIniFileC extends rd_WinIniFile {
   */
   _checkForCustomizedApp() {
     ; test if custom setting is defined
-    for appId, appWintitle in this.customSettings {
-      if (this._isCustomizedAppActive(appWintitle)) {
-        return appId
+    for _, item in this.customSettings {
+      if (this._isCustomizedAppActive(item.winTitle)) {
+        return item.appId
       }
     }
     return ""

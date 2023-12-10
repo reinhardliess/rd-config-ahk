@@ -56,6 +56,7 @@ FileRead, logContents, result.tests.log
 OutputDebug, % logContents
 ExitApp, % assert.failTotal
 
+;; Class Test_WinIniFileC
 Class Test_WinIniFileC extends rd_WinIniFileC {
   
   ; To mock active window
@@ -67,6 +68,7 @@ Class Test_WinIniFileC extends rd_WinIniFileC {
   
 }
 
+;; tests
 test_configUtils() {
   
   assert.label("mergeIniSectionObjects should return the source object if the target is empty")
@@ -147,10 +149,11 @@ test_iniFile() {
 }
 
 test_iniFileC() {
-  
   FileDelete, temp-test.ini
   
-  customSettings := {app1: (APP1_WINTITLE), app2: (APP2_WINTITLE)}
+  customSettings := [{appId: "app1", wintitle: (APP1_WINTITLE)}
+    , {appId: "app2", wintitle: (APP2_WINTITLE) }]
+  
   ini := new Test_WinIniFileC("temp-test.ini", customSettings)
   
   assert.label("writeStringC")
@@ -259,7 +262,9 @@ test_ConfigWithDefaults() {
 }
 
 test_ConfigWithDefaultsC() {
-  customSettings := {app1: (APP1_WINTITLE), app2: (APP2_WINTITLE)}
+  customSettings := [{appId: "app1", wintitle: (APP1_WINTITLE)}
+  , {appId: "app2", wintitle: (APP2_WINTITLE) }]
+
   iniDefault := new Test_WinIniFileC("defaultC.ini", customSettings)
   iniUser    := new Test_WinIniFileC("userC.ini", customSettings)
   ini := new rd_ConfigWithDefaultsC(iniUser, iniDefault)
